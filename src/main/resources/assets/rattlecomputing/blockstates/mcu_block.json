@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "rattlecomputing:block/mcu_block" }
+  }
+}
