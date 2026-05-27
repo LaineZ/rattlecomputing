@@ -17,5 +17,7 @@ public class ClientScreens {
                 Rattlecomputing.MCU_BLOCK_MENU.get(),
                 McuBlockScreen::new
         );
+
+
     }
 }

@@ -13,12 +13,15 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.LevelResource;
 import ru.bpm140.rattlecomputing.packets.FirmwareUploadPacket;
 import ru.bpm140.rattlecomputing.packets.SelfDestructPacket;
+import screens.firmware.FirmwarePickerScreen;
 
 import javax.swing.*;
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 public class CartridgeItem extends Item {
@@ -50,24 +53,11 @@ public class CartridgeItem extends Item {
     }
 
     private void openFile(ItemStack stack) {
-        try {
-            JFileChooser chooser = new JFileChooser();
-            int result = chooser.showOpenDialog(null);
+        Path dir = Path.of(System.getProperty("user.home"));
 
-            if (result == JFileChooser.APPROVE_OPTION) {
-                File file = chooser.getSelectedFile();
-                var size = Files.size(file.toPath());
-                if (size < 1024*1024*1024) { // 1MB
-                    byte[] data = Files.readAllBytes(file.toPath());
-                    // TODO: make unique file names
-                    Minecraft.getInstance().getConnection().send(new FirmwareUploadPacket(file.getPath(), file.getName(), data, stack));
-                } else {
-                    JOptionPane.showMessageDialog(null, "File size is too big to upload (" + size * 1024 + " KB)");
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Minecraft.getInstance().setScreen(
+                new FirmwarePickerScreen(dir)
+        );
     }
 
     @Override
