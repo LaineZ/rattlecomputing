@@ -10,8 +10,8 @@ import java.nio.file.Path;
 public class UpToDirectoryEntry extends FileEntry {
     private static final String TEXT = "< Up to directory >";
 
-    public UpToDirectoryEntry(PathWrapper file) {
-        super(file);
+    public UpToDirectoryEntry(PathWrapper file, ClickHandler handler) {
+        super(file, handler);
     }
 
     @Override
