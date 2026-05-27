@@ -1,5 +1,6 @@
 {
   "itemGroup.rattlecomputing": "Rattle Computing",
   "block.rattlecomputing.mcu_block": "MCU",
-  "item.rattlecomputing.example_item": "Example Item"
+  "item.rattlecomputing.example_item": "Example Item",
+  "item.rattlecomputing.cartridge": "Cartridge"
 }

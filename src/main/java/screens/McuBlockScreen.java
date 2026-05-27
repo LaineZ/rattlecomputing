@@ -12,7 +12,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import ru.bpm140.rattlecomputing.DisplayTexture;
-import ru.bpm140.rattlecomputing.SelfDestructPacket;
+import ru.bpm140.rattlecomputing.packets.SelfDestructPacket;
 import ru.bpm140.rattlecomputing.blockentities.McuBlockEntity;
 import ru.bpm140.rattlecomputing.menus.McuBlockMenu;
 

@@ -5,21 +5,20 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.storage.LevelResource;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -42,15 +41,21 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
 import ru.bpm140.rattlecomputing.blockentities.McuBlockEntity;
 import ru.bpm140.rattlecomputing.blocks.McuBlock;
+import ru.bpm140.rattlecomputing.items.CartridgeItem;
 import ru.bpm140.rattlecomputing.menus.McuBlockMenu;
 import net.minecraft.world.level.Level;
+import ru.bpm140.rattlecomputing.packets.FirmwareUploadPacket;
+import ru.bpm140.rattlecomputing.packets.SelfDestructPacket;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.function.Supplier;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(Rattlecomputing.MODID)
 public class Rattlecomputing {
     public static final String MODID = "rattlecomputing";
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
@@ -65,9 +70,7 @@ public class Rattlecomputing {
     public static final DeferredBlock<Block> EXAMPLE_BLOCK = BLOCKS.registerSimpleBlock("example_block", BlockBehaviour.Properties.of().mapColor(MapColor.STONE));
     public static final DeferredItem<BlockItem> EXAMPLE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("example_block", EXAMPLE_BLOCK);
     public static final DeferredItem<Item> EXAMPLE_ITEM = ITEMS.registerSimpleItem("example_item", new Item.Properties().food(new FoodProperties.Builder().alwaysEdible().nutrition(1).saturationModifier(2f).build()));
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> EXAMPLE_TAB = CREATIVE_MODE_TABS.register("example_tab", () -> CreativeModeTab.builder().title(Component.translatable("itemGroup.rattlecomputing")).withTabsBefore(CreativeModeTabs.COMBAT).icon(() -> EXAMPLE_ITEM.get().getDefaultInstance()).displayItems((parameters, output) -> {
-        output.accept(EXAMPLE_ITEM.get()); // Add the example item to the tab. For your own tabs, this method is preferred over the event
-    }).build());
+    public static final DeferredItem<Item> CARTRIDGE_ITEM = ITEMS.register("cartridge", () -> new CartridgeItem(new Item.Properties().stacksTo(1)));
 
     public static final DeferredBlock<Block> MCU_BLOCK =
             BLOCKS.register("mcu_block",
@@ -94,10 +97,17 @@ public class Rattlecomputing {
                     )
             );
 
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> RATTLE_COMPUTING_TAB = CREATIVE_MODE_TABS.register("rattle_computing_tab", () -> CreativeModeTab.builder().title(Component.translatable("itemGroup.rattlecomputing")).withTabsBefore(CreativeModeTabs.COMBAT).icon(() -> EXAMPLE_ITEM.get().getDefaultInstance()).displayItems((parameters, output) -> {
+        output.accept(EXAMPLE_ITEM.get()); // Add the example item to the tab. For your own tabs, this method is preferred over the event
+        output.accept(MCU_BLOCK_ITEM.get().getDefaultInstance());
+        output.accept(CARTRIDGE_ITEM.get().getDefaultInstance());
+    }).build());
+
     // The constructor for the mod class is the first code that is run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
     public Rattlecomputing(IEventBus modEventBus, ModContainer modContainer) {
-        // Register the commonSetup method for modloading
+        System.setProperty("java.awt.headless", "false");
+        // Register the commonSetup method for modloadingн
         modEventBus.addListener(this::commonSetup);
 
         // Register the Deferred Register to the mod event bus so blocks get registered
@@ -136,6 +146,28 @@ public class Rattlecomputing {
                     });
                 }
         );
+
+        registrar.playToServer(FirmwareUploadPacket.TYPE, FirmwareUploadPacket.CODEC, (msg, ctx) -> {
+            ctx.enqueueWork(() -> {
+                ServerPlayer player = (ServerPlayer) ctx.player();
+                ServerLevel level = player.serverLevel();
+                ItemStack stack = player.getMainHandItem();
+                var item = stack.getItem();
+
+                if (item instanceof CartridgeItem) {
+                    Path worldDir = level.getServer().getWorldPath(LevelResource.ROOT).resolve("rattecomputing").resolve("firmware");
+                    try {
+                        Files.createDirectories(worldDir);
+                        Path file = worldDir.resolve(msg.firmwareName());
+                        Files.write(file, msg.data());
+                        CartridgeItem.setFirmware(stack, msg.firmwareName(), msg.path());
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        });
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
