@@ -6,6 +6,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import ru.bpm140.rattlecomputing.utils.PathWrapper;
+import screens.Modal;
 
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
@@ -14,14 +15,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class FirmwarePickerScreen extends Screen {
+    public interface FilePickerHandler {
+        boolean onSelect(Path path);
+    }
+
     private Path directory;
     private FileList list;
     private boolean browsingRoots;
     private EditBox pathBox;
+    private FilePickerHandler callback;
 
-    public FirmwarePickerScreen(Path initialDirectory) {
+    public FirmwarePickerScreen(Path initialDirectory, FilePickerHandler callback) {
         super(Component.literal("Select firmware ELF"));
         this.directory = initialDirectory;
+        this.callback = callback;
     }
 
     private void loadRoots() {
@@ -83,12 +90,9 @@ public class FirmwarePickerScreen extends Screen {
 
     private void onOpen(PathWrapper file) {
         if (!Files.isDirectory(file.path)) {
-            try {
-                byte[] data = Files.readAllBytes(file.path);
-                System.out.println("selected file: " + file.path);
+            boolean isOk = callback.onSelect(file.path);
+            if (isOk) {
                 this.onClose();
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         } else {
             if (file.isRoot) {

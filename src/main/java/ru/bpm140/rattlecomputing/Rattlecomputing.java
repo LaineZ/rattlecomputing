@@ -5,7 +5,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -49,6 +48,7 @@ import ru.bpm140.rattlecomputing.packets.SelfDestructPacket;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
@@ -155,12 +155,15 @@ public class Rattlecomputing {
                 var item = stack.getItem();
 
                 if (item instanceof CartridgeItem) {
-                    Path worldDir = level.getServer().getWorldPath(LevelResource.ROOT).resolve("rattecomputing").resolve("firmware");
+                    Path worldDir = level.getServer().getWorldPath(LevelResource.ROOT).resolve("rattlecomputing").resolve("firmware");
                     try {
                         Files.createDirectories(worldDir);
-                        Path file = worldDir.resolve(msg.firmwareName());
+                        String randomFileName = UUID.randomUUID().toString();
+                        Path file = worldDir.resolve(randomFileName);
+                        Path originalPath = Path.of(msg.originalPath());
                         Files.write(file, msg.data());
-                        CartridgeItem.setFirmware(stack, msg.firmwareName(), msg.path());
+                        CartridgeItem.setFirmware(stack, msg.originalPath(), file.toString(),
+                                                  originalPath.getFileName().toString());
 
                     } catch (Exception e) {
                         e.printStackTrace();

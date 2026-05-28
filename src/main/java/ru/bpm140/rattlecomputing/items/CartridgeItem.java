@@ -13,13 +13,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.storage.LevelResource;
 import ru.bpm140.rattlecomputing.packets.FirmwareUploadPacket;
-import ru.bpm140.rattlecomputing.packets.SelfDestructPacket;
+import screens.Modal;
 import screens.firmware.FirmwarePickerScreen;
 
-import javax.swing.*;
-import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -29,9 +27,10 @@ public class CartridgeItem extends Item {
         super(properties);
     }
 
-    public static void setFirmware(ItemStack stack, String path, String name) {
+    public static void setFirmware(ItemStack stack, String originalPath, String path, String name) {
         CompoundTag tag = new CompoundTag();
         tag.putString("name", name);
+        tag.putString("original_path", originalPath);
         tag.putString("path", path);
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
     }
@@ -44,6 +43,14 @@ public class CartridgeItem extends Item {
         return tag.getString("path");
     }
 
+    public static String getFirmwareOriginalPath(ItemStack stack) {
+        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        if (data == null) return null;
+        CompoundTag tag = data.copyTag();
+
+        return tag.getString("original_path");
+    }
+
     public static String getFirmwareName(ItemStack stack) {
         CustomData data = stack.get(DataComponents.CUSTOM_DATA);
         if (data == null) return null;
@@ -52,12 +59,33 @@ public class CartridgeItem extends Item {
         return tag.getString("name");
     }
 
-    private void openFile(ItemStack stack) {
-        Path dir = Path.of(System.getProperty("user.home"));
+    private boolean onFileOpened(Path file) {
+        try {
+            var size = Files.size(file) / 1024;
+            if (size > 20) { // TODO: Increase limit with packet splitting or smth
+                Modal.alert(Component.literal("File read error"), Component.literal("File is too large. (" + size + " KiB)"));
+                return false;
+            }
 
-        Minecraft.getInstance().setScreen(
-                new FirmwarePickerScreen(dir)
-        );
+            byte[] elf = Files.readAllBytes(file);
+            Minecraft.getInstance().getConnection().send(new FirmwareUploadPacket(file.toString(), elf));
+            return true;
+        } catch (IOException e) {
+            Modal.alert(Component.literal("Upload error"), Component.literal(e.toString()));
+            return false;
+        }
+    }
+
+    private void openFilePicker(ItemStack stack) {
+        var path = getFirmwareOriginalPath(stack);
+        Path dir = Path.of(System.getProperty("user.home"));
+        try {
+            if (path != null) {
+                dir = Path.of(path).getParent();
+            }
+        } catch (Exception ignored) {}
+
+        Minecraft.getInstance().setScreen(new FirmwarePickerScreen(dir, this::onFileOpened));
     }
 
     @Override
@@ -65,29 +93,28 @@ public class CartridgeItem extends Item {
         ItemStack stack = player.getItemInHand(hand);
 
         if (level.isClientSide) {
-            openFile(stack);
+            openFilePicker(stack);
         }
 
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
     }
 
-
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext tooltipContext, List<Component> components, TooltipFlag tooltipFlag) {
-        String path = getFirmwarePath(stack);
+        String originalPath = getFirmwareOriginalPath(stack);
         String name = getFirmwareName(stack);
 
-        if (path == null && name == null) {
+        if (originalPath == null && name == null) {
             components.add(Component.literal("< Empty cartridge >")
                     .withStyle(ChatFormatting.GRAY));
         } else {
             if (name != null) {
                 components.add(Component.literal(name)
-                        .withStyle(ChatFormatting.WHITE));
+                        .withStyle(ChatFormatting.GRAY));
             }
 
-            if (path != null) {
-                components.add(Component.literal(path)
+            if (originalPath != null) {
+                components.add(Component.literal(originalPath)
                         .withStyle(ChatFormatting.DARK_GRAY));
             }
         }
