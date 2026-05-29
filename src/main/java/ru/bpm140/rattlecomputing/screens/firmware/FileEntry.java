@@ -1,4 +1,4 @@
-package screens.firmware;
+package ru.bpm140.rattlecomputing.screens.firmware;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
@@ -8,8 +8,6 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import ru.bpm140.rattlecomputing.utils.PathWrapper;
-
-import java.nio.file.Files;
 
 public class FileEntry extends ObjectSelectionList.Entry<FileEntry> {
     public interface ClickHandler {

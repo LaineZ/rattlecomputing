@@ -1,4 +1,4 @@
-package screens.firmware;
+package ru.bpm140.rattlecomputing.screens.firmware;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ObjectSelectionList;

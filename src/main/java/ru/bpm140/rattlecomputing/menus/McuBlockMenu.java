@@ -1,29 +1,25 @@
 package ru.bpm140.rattlecomputing.menus;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.neoforged.neoforge.items.SlotItemHandler;
 import ru.bpm140.rattlecomputing.Rattlecomputing;
 import ru.bpm140.rattlecomputing.blockentities.McuBlockEntity;
 
 public class McuBlockMenu extends AbstractContainerMenu {
-
-    public final McuBlockEntity be;
-    private static final int HOTBAR_START = 27;
-    private static final int HOTBAR_END = 36;
-    private static final int INV_START = 0;
-    private static final int INV_END = 27;
-
-    public McuBlockMenu(int id, Inventory inv, FriendlyByteBuf buf) {
+    public McuBlockMenu(int id, Inventory playerInventory, McuBlockEntity be) {
         super(Rattlecomputing.MCU_BLOCK_MENU.get(), id);
 
+        addSlot(new SlotItemHandler(
+                be.inventory,
+                0,
+                24,
+                14
+        ));
 
         int startX = 8;
         int startY = 84;
@@ -31,12 +27,7 @@ public class McuBlockMenu extends AbstractContainerMenu {
         // PLAYER INVENTORY
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
-                this.addSlot(new Slot(
-                        inv,
-                        col + row * 9 + 9,
-                        startX + col * 18,
-                        startY + row * 18
-                ));
+                addSlot(new Slot(playerInventory, col + row * 9 + 9, startX + col * 18, startY + row * 18));
             }
         }
 
@@ -44,34 +35,13 @@ public class McuBlockMenu extends AbstractContainerMenu {
         int hotbarY = 142;
 
         for (int i = 0; i < 9; i++) {
-            this.addSlot(new Slot(
-                    inv,
+            addSlot(new Slot(
+                    playerInventory,
                     i,
                     startX + i * 18,
                     hotbarY
             ));
         }
-
-        BlockPos pos = buf.readBlockPos();
-        Level level = inv.player.level();
-
-        BlockEntity entity = level.getBlockEntity(pos);
-
-        if (!(entity instanceof McuBlockEntity mcu)) {
-            throw new IllegalStateException("Invalid MCU at " + pos);
-        }
-
-        this.be = mcu;
-    }
-
-    public McuBlockMenu(int id, Inventory inv, BlockEntity mcuEntity) {
-        super(Rattlecomputing.MCU_BLOCK_MENU.get(), id);
-
-        if (!(mcuEntity instanceof McuBlockEntity mcu)) {
-            throw new IllegalStateException("Invalid MCU at " + mcuEntity.getBlockPos());
-        }
-
-        this.be = mcu;
     }
 
     @Override
@@ -83,37 +53,46 @@ public class McuBlockMenu extends AbstractContainerMenu {
     }
 
     @Override
-    public ItemStack quickMoveStack(Player player, int index) {
-        Slot slot = this.slots.get(index);
+    public ItemStack quickMoveStack(Player player, int quickMovedSlotIndex) {
+        ItemStack quickMovedStack = ItemStack.EMPTY;
+        Slot quickMovedSlot = this.slots.get(quickMovedSlotIndex);
 
-        if (slot == null || !slot.hasItem()) {
-            return ItemStack.EMPTY;
-        }
+        if (quickMovedSlot != null && quickMovedSlot.hasItem()) {
+            ItemStack rawStack = quickMovedSlot.getItem();
+            quickMovedStack = rawStack.copy();
 
-        ItemStack stack = slot.getItem();
-        ItemStack copy = stack.copy();
+            // SLOT 0 = BLOCK SLOT
+            if (quickMovedSlotIndex == 0) {
 
-        // HOTBAR → INVENTORY
-        if (index >= HOTBAR_START) {
-            if (!this.moveItemStackTo(stack, INV_START, INV_END, false)) {
-                return ItemStack.EMPTY;
+                // PLAYER INV + HOTBAR
+                if (!this.moveItemStackTo(rawStack, 1, 37, true)) {
+                    return ItemStack.EMPTY;
+                }
+
+                quickMovedSlot.onQuickCraft(rawStack, quickMovedStack);
             }
-        }
-        // INVENTORY → HOTBAR
-        else {
-            if (!this.moveItemStackTo(stack, HOTBAR_START, HOTBAR_END, false)) {
-                return ItemStack.EMPTY;
+
+            // PLAYER INVENTORY + HOTBAR → BLOCK SLOT
+            else if (quickMovedSlotIndex >= 1 && quickMovedSlotIndex < 37) {
+
+                // TRY PUT INTO BLOCK SLOT ONLY
+                if (!this.moveItemStackTo(rawStack, 0, 1, false)) {
+                    return ItemStack.EMPTY;
+                }
             }
+
+            if (rawStack.isEmpty()) {
+                quickMovedSlot.setByPlayer(ItemStack.EMPTY);
+            } else {
+                quickMovedSlot.setChanged();
+            }
+
+            quickMovedSlot.onTake(player, rawStack);
         }
 
-        if (stack.isEmpty()) {
-            slot.set(ItemStack.EMPTY);
-        } else {
-            slot.setChanged();
-        }
-
-        return copy;
+        return quickMovedStack;
     }
+
 
     @Override
     public boolean stillValid(Player player) {

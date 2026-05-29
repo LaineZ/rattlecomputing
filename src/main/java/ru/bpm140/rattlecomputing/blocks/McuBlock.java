@@ -24,26 +24,37 @@ public class McuBlock extends Block implements EntityBlock {
         super(properties);
     }
 
+    public class McuMenuProvider implements MenuProvider {
+
+        private final BlockPos pos;
+
+        public McuMenuProvider(BlockPos pos) {
+            this.pos = pos;
+        }
+
+        @Override
+        public Component getDisplayName() {
+            return Component.literal("");
+        }
+
+        @Override
+        public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
+            BlockEntity be = player.level().getBlockEntity(pos);
+
+            if (be instanceof McuBlockEntity mcu) {
+                return new McuBlockMenu(id, inv, mcu);
+            }
+
+            throw new IllegalStateException("Invalid MCU at " + pos);
+        }
+    }
+
     @Override
     public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
                                             Player player, BlockHitResult hit) {
 
         if (!level.isClientSide && player instanceof ServerPlayer sp) {
-            sp.openMenu(new MenuProvider() {
-                @Override
-                public Component getDisplayName() {
-                    return Component.literal("");
-                }
-
-                @Override
-                public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
-                    BlockEntity entity = level.getBlockEntity(pos);
-                    if (entity instanceof McuBlockEntity be) {
-                        return new McuBlockMenu(id, inv, be);
-                    }
-                    return null;
-                }
-            }, buf -> buf.writeBlockPos(pos));
+            sp.openMenu(new McuMenuProvider(pos), buf -> buf.writeBlockPos(pos));
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
@@ -52,7 +63,7 @@ public class McuBlock extends Block implements EntityBlock {
     public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
         return level.isClientSide ? null : (lvl, pos, st, be) -> {
             if (be instanceof McuBlockEntity mcu) {
-                mcu.tick();
+                //mcu.tick();
             }
         };
     }

@@ -1,4 +1,4 @@
-package screens.firmware;
+package ru.bpm140.rattlecomputing.screens.firmware;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
@@ -6,9 +6,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import ru.bpm140.rattlecomputing.utils.PathWrapper;
-import screens.Modal;
 
-import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;

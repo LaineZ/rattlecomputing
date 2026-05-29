@@ -1,4 +1,4 @@
-package screens;
+package ru.bpm140.rattlecomputing.screens;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.AlertScreen;

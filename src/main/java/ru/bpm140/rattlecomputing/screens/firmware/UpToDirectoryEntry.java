@@ -1,11 +1,9 @@
-package screens.firmware;
+package ru.bpm140.rattlecomputing.screens.firmware;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import ru.bpm140.rattlecomputing.utils.PathWrapper;
-
-import java.nio.file.Path;
 
 public class UpToDirectoryEntry extends FileEntry {
     private static final String TEXT = "< Up to directory >";
