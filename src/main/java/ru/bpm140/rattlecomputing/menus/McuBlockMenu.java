@@ -6,15 +6,29 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
 import ru.bpm140.rattlecomputing.Rattlecomputing;
 import ru.bpm140.rattlecomputing.blockentities.McuBlockEntity;
 
 public class McuBlockMenu extends AbstractContainerMenu {
+    public class CartridgeSlot extends SlotItemHandler {
+
+        public CartridgeSlot(IItemHandler itemHandler, int index, int x, int y) {
+            super(itemHandler, index, x, y);
+        }
+
+        @Override
+        public boolean mayPlace(ItemStack stack) {
+            return stack.is(Rattlecomputing.CARTRIDGE_ITEM.get());
+        }
+    }
+
+
     public McuBlockMenu(int id, Inventory playerInventory, McuBlockEntity be) {
         super(Rattlecomputing.MCU_BLOCK_MENU.get(), id);
 
-        addSlot(new SlotItemHandler(
+        addSlot(new CartridgeSlot(
                 be.inventory,
                 0,
                 24,

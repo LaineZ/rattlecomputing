@@ -25,7 +25,12 @@ public class McuBlockEntity extends BaseContainerBlockEntity {
     public final byte[] pixels = new byte[WIDTH * HEIGHT];
     public static final int INVENTORY_SIZE = 1;
     private NonNullList<ItemStack> items = NonNullList.withSize(INVENTORY_SIZE, ItemStack.EMPTY);
-    public final ItemStackHandler inventory = new ItemStackHandler(1);
+    public final ItemStackHandler inventory = new ItemStackHandler(1) {
+        @Override
+        protected void onContentsChanged(int slot) {
+            setChanged();
+        }
+    };
 
     @OnlyIn(Dist.CLIENT)
     private boolean dirty = true;
@@ -91,12 +96,18 @@ public class McuBlockEntity extends BaseContainerBlockEntity {
         super.loadAdditional(tag, provider);
 
         byte[] data = tag.getByteArray("pixels");
+
+        if (tag.contains("inv")) {
+            inventory.deserializeNBT(provider, tag.getCompound("inv"));
+        }
+
         System.arraycopy(data, 0, pixels, 0, Math.min(data.length, pixels.length));
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
+        tag.put("inv", inventory.serializeNBT(provider));
         tag.putByteArray("pixels", pixels);
     }
 
@@ -104,6 +115,7 @@ public class McuBlockEntity extends BaseContainerBlockEntity {
     public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
         saveAdditional(tag, provider);
+
         return tag;
     }
 
