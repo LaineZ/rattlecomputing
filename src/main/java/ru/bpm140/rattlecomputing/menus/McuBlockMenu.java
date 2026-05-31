@@ -12,6 +12,8 @@ import ru.bpm140.rattlecomputing.Rattlecomputing;
 import ru.bpm140.rattlecomputing.blockentities.McuBlockEntity;
 
 public class McuBlockMenu extends AbstractContainerMenu {
+    public McuBlockEntity mcuBlockEntity;
+
     public class CartridgeSlot extends SlotItemHandler {
 
         public CartridgeSlot(IItemHandler itemHandler, int index, int x, int y) {
@@ -56,6 +58,8 @@ public class McuBlockMenu extends AbstractContainerMenu {
                     hotbarY
             ));
         }
+
+        this.mcuBlockEntity = be;
     }
 
     @Override

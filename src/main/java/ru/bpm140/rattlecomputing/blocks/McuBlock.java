@@ -66,7 +66,7 @@ public class McuBlock extends Block implements EntityBlock {
     public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
         return level.isClientSide ? null : (lvl, pos, st, be) -> {
             if (be instanceof McuBlockEntity mcu) {
-                //mcu.tick();
+                mcu.tick();
             }
         };
     }

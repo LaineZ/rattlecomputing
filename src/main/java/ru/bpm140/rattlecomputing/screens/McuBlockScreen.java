@@ -9,7 +9,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import ru.bpm140.rattlecomputing.DisplayTexture;
-import ru.bpm140.rattlecomputing.Shaders;
 import ru.bpm140.rattlecomputing.menus.McuBlockMenu;
 import ru.bpm140.rattlecomputing.screens.components.SMDImageButton;
 import ru.bpm140.rattlecomputing.screens.immediate.LEDGlow;
@@ -18,7 +17,7 @@ import ru.bpm140.rattlecomputing.screens.immediate.LEDGlow;
 public class McuBlockScreen extends AbstractContainerScreen<McuBlockMenu> {
     private static final ResourceLocation CONTAINER_TEXTURE = ResourceLocation.fromNamespaceAndPath("rattlecomputing",
             "textures/gui/mcu_container.png");
-    private DisplayTexture texture;
+    private final DisplayTexture displayTexture = new DisplayTexture(40, 34, "internaldisplay");
 
     private static final int CONTAINER_TEXTURE_WIDTH = 176;
     private static final int CONTAINER_TEXTURE_HEIGHT = 166;
@@ -36,9 +35,6 @@ public class McuBlockScreen extends AbstractContainerScreen<McuBlockMenu> {
     @Override
     protected void init() {
         super.init();
-        if (texture == null) {
-            texture = new DisplayTexture();
-        }
 
         this.addRenderableWidget(new SMDImageButton(leftPos + 16, topPos + 32, btn -> Modal.alert(Component.literal("MCU Said:"), Component.literal("POWER"))));
         this.addRenderableWidget(new SMDImageButton(leftPos + 16, topPos + 40, btn -> Modal.alert(Component.literal("MCU Said:"), Component.literal("RESET"))));
@@ -61,5 +57,8 @@ public class McuBlockScreen extends AbstractContainerScreen<McuBlockMenu> {
         LED.render(guiGraphics,leftPos + 15, topPos + 47, LED_GLOW_WIDTH, LED_GLOW_HEIGHT);
         runLED.render(guiGraphics, leftPos + 15, topPos + 47 + baseOffset, LED_GLOW_WIDTH, LED_GLOW_HEIGHT);
         failLED.render(guiGraphics,leftPos + 15, topPos + 47 + (baseOffset * 2), LED_GLOW_WIDTH, LED_GLOW_HEIGHT);
+        displayTexture.update(menu.mcuBlockEntity.pixels);
+        guiGraphics.blit(displayTexture.getId(), leftPos + 109, topPos + 16, 0, 0,
+                displayTexture.getWidth(), displayTexture.getHeight(), displayTexture.getWidth(), displayTexture.getHeight());
     }
 }

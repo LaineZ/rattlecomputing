@@ -16,12 +16,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import ru.bpm140.rattlecomputing.DisplayTexture;
 import ru.bpm140.rattlecomputing.Rattlecomputing;
 import ru.bpm140.rattlecomputing.menus.McuBlockMenu;
 
 public class McuBlockEntity extends BaseContainerBlockEntity {
-    public final int WIDTH = 128;
-    public final int HEIGHT = 64;
+    public final int WIDTH = 40;
+    public final int HEIGHT = 34;
     public final byte[] pixels = new byte[WIDTH * HEIGHT];
     public static final int INVENTORY_SIZE = 1;
     private NonNullList<ItemStack> items = NonNullList.withSize(INVENTORY_SIZE, ItemStack.EMPTY);
@@ -35,10 +36,10 @@ public class McuBlockEntity extends BaseContainerBlockEntity {
     @OnlyIn(Dist.CLIENT)
     private boolean dirty = true;
     private int tick = 0;
-    public final NativeImage image = new NativeImage(WIDTH, HEIGHT, false);
 
     public McuBlockEntity(BlockPos pos, BlockState blockState) {
         super(Rattlecomputing.MCU_BLOCK_ENTITY.get(), pos, blockState);
+        setPixel(0, 0, true);
     }
 
     @Override
@@ -66,7 +67,7 @@ public class McuBlockEntity extends BaseContainerBlockEntity {
         return new McuBlockMenu(id, playerInventory, this);
     }
 
-/*    public void setPixel(int x, int y, boolean on) {
+    public void setPixel(int x, int y, boolean on) {
         if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) return;
 
         int i = x + y * WIDTH;
@@ -76,20 +77,12 @@ public class McuBlockEntity extends BaseContainerBlockEntity {
         if (level != null && !level.isClientSide) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
-    }*/
+    }
 
-/*    public void tick() {
+    public void tick() {
         if (level == null || level.isClientSide) return;
-        int x = tick % WIDTH;
-        int y = (tick / WIDTH) % HEIGHT;
-        for (int i = 0; i < pixels.length; i++) {
-            pixels[i] = 0;
-        }
-
-        setPixel(x, y, true);
-        tick++;
         setChanged();
-    }*/
+    }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
