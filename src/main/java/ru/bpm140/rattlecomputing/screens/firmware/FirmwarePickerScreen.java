@@ -59,7 +59,6 @@ public class FirmwarePickerScreen extends Screen {
                 return;
             }
             Files.createDirectories(directory);
-            Path parent = directory.getParent();
             list.addFileEntry(
                     new UpToDirectoryEntry(new PathWrapper(directory, false), this::handleOpen)
             );
