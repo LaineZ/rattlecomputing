@@ -1,4 +1,4 @@
-package ru.bpm140.rattlecomputing.packets;
+package ru.bpm140.rattlecomputing.network.packets;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;

@@ -57,7 +57,7 @@ public class McuBlockScreen extends AbstractContainerScreen<McuBlockMenu> {
         LED.render(guiGraphics,leftPos + 15, topPos + 47, LED_GLOW_WIDTH, LED_GLOW_HEIGHT);
         runLED.render(guiGraphics, leftPos + 15, topPos + 47 + baseOffset, LED_GLOW_WIDTH, LED_GLOW_HEIGHT);
         failLED.render(guiGraphics,leftPos + 15, topPos + 47 + (baseOffset * 2), LED_GLOW_WIDTH, LED_GLOW_HEIGHT);
-        displayTexture.update(menu.mcuBlockEntity.pixels);
+        // TODO: Texture update
         guiGraphics.blit(displayTexture.getId(), leftPos + 109, topPos + 16, 0, 0,
                 displayTexture.getWidth(), displayTexture.getHeight(), displayTexture.getWidth(), displayTexture.getHeight());
     }

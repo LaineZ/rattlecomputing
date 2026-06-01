@@ -13,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
-import ru.bpm140.rattlecomputing.packets.FirmwareUploadPacket;
+import ru.bpm140.rattlecomputing.network.packets.FirmwareUploadPacket;
 import ru.bpm140.rattlecomputing.screens.Modal;
 import ru.bpm140.rattlecomputing.screens.firmware.FirmwarePickerScreen;
 

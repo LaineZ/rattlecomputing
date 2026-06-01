@@ -28,8 +28,6 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
@@ -46,8 +44,9 @@ import ru.bpm140.rattlecomputing.blocks.McuBlock;
 import ru.bpm140.rattlecomputing.items.CartridgeItem;
 import ru.bpm140.rattlecomputing.menus.McuBlockMenu;
 import net.minecraft.world.level.Level;
-import ru.bpm140.rattlecomputing.packets.FirmwareUploadPacket;
-import ru.bpm140.rattlecomputing.packets.SelfDestructPacket;
+import ru.bpm140.rattlecomputing.network.Networking;
+import ru.bpm140.rattlecomputing.network.packets.FirmwareUploadPacket;
+import ru.bpm140.rattlecomputing.network.packets.SelfDestructPacket;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -80,7 +79,6 @@ public class Rattlecomputing {
     public static final DeferredItem<BlockItem> EXAMPLE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("example_block", EXAMPLE_BLOCK);
     public static final DeferredItem<Item> EXAMPLE_ITEM = ITEMS.registerSimpleItem("example_item", new Item.Properties().food(new FoodProperties.Builder().alwaysEdible().nutrition(1).saturationModifier(2f).build()));
     public static final DeferredItem<Item> CARTRIDGE_ITEM = ITEMS.register("cartridge", () -> new CartridgeItem(new Item.Properties().stacksTo(1)));
-
     public static final DeferredBlock<Block> MCU_BLOCK =
             BLOCKS.register("mcu_block",
                     () -> new McuBlock(BlockBehaviour.Properties.of()
@@ -91,21 +89,18 @@ public class Rattlecomputing {
 
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MODID);
-
     public static final Supplier<BlockEntityType<McuBlockEntity>> MCU_BLOCK_ENTITY =
             BLOCK_ENTITIES.register("mcu_block",
                     () -> BlockEntityType.Builder.of(
                             McuBlockEntity::new,
                             MCU_BLOCK.get()
                     ).build(null));
-
     public static final DeferredItem<Item> MCU_BLOCK_ITEM =
             ITEMS.register("mcu_block",
                     () -> new BlockItem(MCU_BLOCK.get(),
                             new Item.Properties()
                     )
             );
-
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> RATTLE_COMPUTING_TAB = CREATIVE_MODE_TABS.register("rattle_computing_tab", () -> CreativeModeTab.builder().title(Component.translatable("itemGroup.rattlecomputing")).withTabsBefore(CreativeModeTabs.COMBAT).icon(() -> EXAMPLE_ITEM.get().getDefaultInstance()).displayItems((parameters, output) -> {
         output.accept(EXAMPLE_ITEM.get()); // Add the example item to the tab. For your own tabs, this method is preferred over the event
         output.accept(MCU_BLOCK_ITEM.get().getDefaultInstance());
@@ -142,44 +137,7 @@ public class Rattlecomputing {
     }
 
     private void registerPayloads(RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar("1");
-        registrar.playToServer(
-                SelfDestructPacket.TYPE,
-                SelfDestructPacket.CODEC,
-                (msg, ctx) -> {
-                    ctx.enqueueWork(() -> {
-                        ServerPlayer player = (ServerPlayer) ctx.player();
-                        ServerLevel level = player.serverLevel();
-                        BlockPos pos = msg.pos();
-                        level.explode(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 4.0f, Level.ExplosionInteraction.BLOCK);
-                    });
-                }
-        );
-
-        registrar.playToServer(FirmwareUploadPacket.TYPE, FirmwareUploadPacket.CODEC, (msg, ctx) -> {
-            ctx.enqueueWork(() -> {
-                ServerPlayer player = (ServerPlayer) ctx.player();
-                ServerLevel level = player.serverLevel();
-                ItemStack stack = player.getMainHandItem();
-                var item = stack.getItem();
-
-                if (item instanceof CartridgeItem) {
-                    Path worldDir = level.getServer().getWorldPath(LevelResource.ROOT).resolve("rattlecomputing").resolve("firmware");
-                    try {
-                        Files.createDirectories(worldDir);
-                        String randomFileName = UUID.randomUUID().toString();
-                        Path file = worldDir.resolve(randomFileName);
-                        Path originalPath = Path.of(msg.originalPath());
-                        Files.write(file, msg.data());
-                        CartridgeItem.setFirmware(stack, msg.originalPath(), file.toString(),
-                                                  originalPath.getFileName().toString());
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-        });
+        Networking.register(event);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
