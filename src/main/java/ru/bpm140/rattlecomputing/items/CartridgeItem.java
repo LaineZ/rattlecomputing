@@ -13,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.network.PacketDistributor;
 import ru.bpm140.rattlecomputing.network.packets.FirmwareUploadPacket;
 import ru.bpm140.rattlecomputing.screens.Modal;
 import ru.bpm140.rattlecomputing.screens.firmware.FirmwarePickerScreen;
@@ -68,6 +69,7 @@ public class CartridgeItem extends Item {
             }
 
             byte[] elf = Files.readAllBytes(file);
+            // TODO: Refactor to packet distributor?
             Minecraft.getInstance().getConnection().send(new FirmwareUploadPacket(file.toString(), elf));
             return true;
         } catch (IOException e) {

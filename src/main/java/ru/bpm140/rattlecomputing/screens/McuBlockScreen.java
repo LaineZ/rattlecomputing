@@ -8,8 +8,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.network.PacketDistributor;
 import ru.bpm140.rattlecomputing.DisplayTexture;
 import ru.bpm140.rattlecomputing.menus.McuBlockMenu;
+import ru.bpm140.rattlecomputing.network.packets.SetCPUStatusPacket;
 import ru.bpm140.rattlecomputing.screens.components.SMDImageButton;
 import ru.bpm140.rattlecomputing.screens.immediate.LEDGlow;
 
@@ -36,8 +38,8 @@ public class McuBlockScreen extends AbstractContainerScreen<McuBlockMenu> {
     protected void init() {
         super.init();
 
-        this.addRenderableWidget(new SMDImageButton(leftPos + 16, topPos + 32, btn -> Modal.alert(Component.literal("MCU Said:"), Component.literal("POWER"))));
-        this.addRenderableWidget(new SMDImageButton(leftPos + 16, topPos + 40, btn -> Modal.alert(Component.literal("MCU Said:"), Component.literal("RESET"))));
+        this.addRenderableWidget(new SMDImageButton(leftPos + 16, topPos + 32, btn -> PacketDistributor.sendToServer(new SetCPUStatusPacket(menu.mcuBlockEntity.getBlockPos(), SetCPUStatusPacket.Action.POWER))));
+        this.addRenderableWidget(new SMDImageButton(leftPos + 16, topPos + 40, btn -> PacketDistributor.sendToServer(new SetCPUStatusPacket(menu.mcuBlockEntity.getBlockPos(), SetCPUStatusPacket.Action.RESET))));
     }
 
     @Override

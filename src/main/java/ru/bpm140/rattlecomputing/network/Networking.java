@@ -1,6 +1,9 @@
 package ru.bpm140.rattlecomputing.network;
 
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import ru.bpm140.rattlecomputing.network.server.FirmwareUploadHandler;
+import ru.bpm140.rattlecomputing.network.server.SelfDestructHandler;
+import ru.bpm140.rattlecomputing.network.server.SetCPUStatusHandler;
 
 public class Networking {
     public static void register(RegisterPayloadHandlersEvent event) {
@@ -8,5 +11,7 @@ public class Networking {
 
         SelfDestructHandler.register(registrar);
         FirmwareUploadHandler.register(registrar);
+        SetCPUStatusHandler.register(registrar);
+
     }
 }

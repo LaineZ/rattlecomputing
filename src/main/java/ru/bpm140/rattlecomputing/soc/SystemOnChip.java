@@ -7,6 +7,8 @@ import ru.bpm140.rottenmangal.*;
 import ru.bpm140.rottenmangal.devices.FramebufferDevice;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class SystemOnChip implements INBTSerializable<CompoundTag> {
     public final CPU cpu = new CPU();
@@ -25,7 +27,9 @@ public class SystemOnChip implements INBTSerializable<CompoundTag> {
         }
     }
 
-    public void power() {
+    public void power(Path path) throws Exception {
+        var programBinary = Files.readAllBytes(path);
+        cpu.loadELF(programBinary);
         cpu.setRunning();
     }
 

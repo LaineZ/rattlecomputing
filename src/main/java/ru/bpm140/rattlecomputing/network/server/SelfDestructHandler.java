@@ -1,4 +1,4 @@
-package ru.bpm140.rattlecomputing.network;
+package ru.bpm140.rattlecomputing.network.server;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;

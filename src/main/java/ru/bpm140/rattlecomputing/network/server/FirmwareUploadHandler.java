@@ -1,4 +1,4 @@
-package ru.bpm140.rattlecomputing.network;
+package ru.bpm140.rattlecomputing.network.server;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -21,7 +21,6 @@ public class FirmwareUploadHandler {
                 FirmwareUploadHandler::handle
         );
     }
-
 
     private static void handle(FirmwareUploadPacket msg, IPayloadContext ctx) {
         ctx.enqueueWork(() -> {
