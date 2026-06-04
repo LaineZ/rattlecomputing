@@ -23,7 +23,7 @@ public record SetCPUStatusPacket(BlockPos pos, Action action) implements CustomP
                     },
                     buf -> new SetCPUStatusPacket(
                             buf.readBlockPos(),
-                            SetCPUStatusPacket.Action.values()[buf.readInt()]
+                            buf.readEnum(SetCPUStatusPacket.Action.class)
                     )
             );
 

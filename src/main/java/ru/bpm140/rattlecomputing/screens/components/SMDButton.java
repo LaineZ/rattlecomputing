@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
-public class SMDImageButton extends Button {
+public class SMDButton extends Button {
     public enum State {
         IDLE,
         HOVER,
@@ -20,7 +20,7 @@ public class SMDImageButton extends Button {
     private static final int TEXTURE_SIZE_H = 21;
     private static final int STATES_COUNT = 3;
 
-    public SMDImageButton(int x, int y, OnPress onPress) {
+    public SMDButton(int x, int y, OnPress onPress) {
         super(x, y, TEXTURE_SIZE_W, TEXTURE_SIZE_H / STATES_COUNT, Component.empty(), onPress, DEFAULT_NARRATION);
         this.texture = ResourceLocation.fromNamespaceAndPath("rattlecomputing", "textures/gui/sprites/smd_buttons.png");
     }

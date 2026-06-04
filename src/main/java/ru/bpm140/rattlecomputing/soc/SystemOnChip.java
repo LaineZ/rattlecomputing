@@ -5,56 +5,85 @@ import net.minecraft.nbt.CompoundTag;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 import ru.bpm140.rottenmangal.*;
 import ru.bpm140.rottenmangal.devices.FramebufferDevice;
-
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
 
 public class SystemOnChip implements INBTSerializable<CompoundTag> {
     public final CPU cpu = new CPU();
     public final Bus bus = new Bus();
     public final FramebufferDevice internalFramebuffer = new FramebufferDevice(40, 34);
+    boolean changed = true;
 
     public SystemOnChip() {
-        var memory = new MemoryRegion(0x80000000, 16*1024*1024, true, true);
+        var memory = new MemoryRegion(0x80000000, 16 * 1024 * 1024, true, true);
         cpu.memory.add(memory);
         cpu.bus.attach(internalFramebuffer);
     }
 
     public void tick() {
         if (cpu.getState() == CPUStatus.CPUState.RUNNING) {
-            cpu.step();
+            for (int i = 0; i < 1000; i++) {
+                cpu.step();
+            }
+            changed = true;
         }
     }
 
-    public void power(Path path) throws Exception {
+    public void toggle(Path path) throws Exception {
         var programBinary = Files.readAllBytes(path);
         cpu.loadELF(programBinary);
-        cpu.setRunning();
+        cpu.reset(cpu.getState() == CPUStatus.CPUState.RUNNING);
+        changed = true;
+    }
+
+    public void reset() {
+        if (cpu.getState() == CPUStatus.CPUState.RUNNING) {
+            cpu.reset(false);
+        }
+    }
+
+    public boolean isChanged() {
+        if (changed) {
+         changed = false;
+         return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
     public CompoundTag serializeNBT(HolderLookup.Provider provider) {
         CompoundTag tag = new CompoundTag();
-
-        try {
-            tag.putByteArray("cpu", cpu.takeSnapshot().toBytes());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
+        var snapshot = cpu.takeSnapshot();
+        tag.putByte("status", (byte) snapshot.state.ordinal()); // FIXME: нормальную сериализацию хуйнуть, а то чё это за хрень
+        tag.putInt("pc", snapshot.pc);
+        tag.putIntArray("registers", snapshot.registers);
+        tag.putInt("mip", snapshot.mip);
+        tag.putInt("mie", snapshot.mie);
+        tag.putInt("mtvec", snapshot.mtvec);
+        tag.putInt("mepc", snapshot.mepc);
+        tag.putInt("mcause", snapshot.mcause);
+        tag.putInt("mtval", snapshot.mtval);
+        tag.putInt("mstatus", snapshot.mstatus);
         return tag;
     }
 
     @Override
     public void deserializeNBT(HolderLookup.Provider provider, CompoundTag compoundTag) {
-        try {
-            if (compoundTag.contains("cpu")) {
-                byte[] data = compoundTag.getByteArray("cpu");
-                cpu.restoreFromSnapshot(new CPUSnapshot(data));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        var snapshot = new CPUSnapshot();
+        snapshot.state = CPUStatus.CPUState.values()[compoundTag.getByte("state")];
+        snapshot.pc = compoundTag.getInt("pc");
+        snapshot.registers = compoundTag.getIntArray("registers");
+        snapshot.mip = compoundTag.getInt("mip");
+        snapshot.mie = compoundTag.getInt("mie");
+        snapshot.mtvec = compoundTag.getInt("mtvec");
+        snapshot.mepc = compoundTag.getInt("mepc");
+        snapshot.mcause = compoundTag.getInt("mcause");
+        snapshot.mtval = compoundTag.getInt("mtval");
+        snapshot.mstatus = compoundTag.getInt("mstatus");
+
+
+        cpu.restoreFromSnapshot(snapshot);
     }
 }

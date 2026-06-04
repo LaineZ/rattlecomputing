@@ -15,7 +15,6 @@ public class McuBlockMenu extends AbstractContainerMenu {
     public McuBlockEntity mcuBlockEntity;
 
     public class CartridgeSlot extends SlotItemHandler {
-
         public CartridgeSlot(IItemHandler itemHandler, int index, int x, int y) {
             super(itemHandler, index, x, y);
         }
@@ -26,10 +25,8 @@ public class McuBlockMenu extends AbstractContainerMenu {
         }
     }
 
-
     public McuBlockMenu(int id, Inventory playerInventory, McuBlockEntity be) {
         super(Rattlecomputing.MCU_BLOCK_MENU.get(), id);
-
         addSlot(new CartridgeSlot(
                 be.inventory,
                 0,
@@ -110,7 +107,6 @@ public class McuBlockMenu extends AbstractContainerMenu {
 
         return quickMovedStack;
     }
-
 
     @Override
     public boolean stillValid(Player player) {

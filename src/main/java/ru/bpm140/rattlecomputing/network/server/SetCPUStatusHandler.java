@@ -25,12 +25,11 @@ public class SetCPUStatusHandler {
 
         if (be instanceof McuBlockEntity mcu) {
             if (msg.action() == SetCPUStatusPacket.Action.POWER) {
-                // TODO: Power cycle
-                mcu.startSoc(player);
+                mcu.toggleSoc(player);
             }
 
             if (msg.action() == SetCPUStatusPacket.Action.RESET) {
-                // TODO: Reset
+                mcu.soc.reset();
             }
         }
     }
