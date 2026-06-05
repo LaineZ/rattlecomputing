@@ -8,7 +8,7 @@ import org.joml.Matrix4f;
 import ru.bpm140.rattlecomputing.Shaders;
 
 public class LEDGlow {
-    public float intensity = 1.0f;
+    public float intensity = 0.0f;
     public float[] color = new float[3];
 
     public static LEDGlow RED() {

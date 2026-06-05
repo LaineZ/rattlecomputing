@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import ru.bpm140.rattlecomputing.blockentities.McuBlockEntity;
 import ru.bpm140.rattlecomputing.blocks.McuBlock;
 import ru.bpm140.rattlecomputing.items.CartridgeItem;
+import ru.bpm140.rattlecomputing.items.DebuggerItem;
 import ru.bpm140.rattlecomputing.menus.McuBlockMenu;
 import net.minecraft.world.level.Level;
 import ru.bpm140.rattlecomputing.network.Networking;
@@ -65,9 +66,7 @@ public class Rattlecomputing {
                     })
             );
 
-    public static final DeferredBlock<Block> EXAMPLE_BLOCK = BLOCKS.registerSimpleBlock("example_block", BlockBehaviour.Properties.of().mapColor(MapColor.STONE));
-    public static final DeferredItem<BlockItem> EXAMPLE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("example_block", EXAMPLE_BLOCK);
-    public static final DeferredItem<Item> EXAMPLE_ITEM = ITEMS.registerSimpleItem("example_item", new Item.Properties().food(new FoodProperties.Builder().alwaysEdible().nutrition(1).saturationModifier(2f).build()));
+    public static final DeferredItem<Item> DEBUGGER_ITEM = ITEMS.register("debugger", () -> new DebuggerItem(new Item.Properties().stacksTo(1)));
     public static final DeferredItem<Item> CARTRIDGE_ITEM = ITEMS.register("cartridge", () -> new CartridgeItem(new Item.Properties().stacksTo(1)));
     public static final DeferredBlock<Block> MCU_BLOCK =
             BLOCKS.register("mcu_block",
@@ -91,8 +90,9 @@ public class Rattlecomputing {
                             new Item.Properties()
                     )
             );
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> RATTLE_COMPUTING_TAB = CREATIVE_MODE_TABS.register("rattle_computing_tab", () -> CreativeModeTab.builder().title(Component.translatable("itemGroup.rattlecomputing")).withTabsBefore(CreativeModeTabs.COMBAT).icon(() -> EXAMPLE_ITEM.get().getDefaultInstance()).displayItems((parameters, output) -> {
-        output.accept(EXAMPLE_ITEM.get()); // Add the example item to the tab. For your own tabs, this method is preferred over the event
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> RATTLE_COMPUTING_TAB = CREATIVE_MODE_TABS.register("rattle_computing_tab", () ->
+            CreativeModeTab.builder().title(Component.translatable("itemGroup.rattlecomputing")).withTabsBefore(CreativeModeTabs.COMBAT).icon(() -> CARTRIDGE_ITEM.get().getDefaultInstance()).displayItems((parameters, output) -> {
+        output.accept(DEBUGGER_ITEM.get());
         output.accept(MCU_BLOCK_ITEM.get().getDefaultInstance());
         output.accept(CARTRIDGE_ITEM.get().getDefaultInstance());
     }).build());
@@ -117,9 +117,6 @@ public class Rattlecomputing {
         // Note that this is necessary if and only if we want *this* class (rattlecomputing) to respond directly to events.
         // Do not add this line if there are no @SubscribeEvent-annotated functions in this class, like onServerStarting() below.
         NeoForge.EVENT_BUS.register(this);
-
-        // Register the item to a creative tab
-        modEventBus.addListener(this::addCreative);
         modEventBus.addListener(this::registerPayloads);
 
         // Register our mod's ModConfigSpec so that FML can create and load the config file for us
@@ -139,11 +136,6 @@ public class Rattlecomputing {
         LOGGER.info(Config.magicNumberIntroduction + Config.magicNumber);
 
         Config.items.forEach((item) -> LOGGER.info("ITEM >> {}", item.toString()));
-    }
-
-    // Add the example block item to the building blocks tab
-    private void addCreative(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) event.accept(EXAMPLE_BLOCK_ITEM);
     }
 
     // You can use SubscribeEvent and let the Event Bus discover methods to call

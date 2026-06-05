@@ -48,10 +48,6 @@ public class McuBlockScreen extends AbstractContainerScreen<McuBlockMenu> implem
                 PacketDistributor.sendToServer(new SetCPUStatusPacket(menu.mcuBlockEntity.getBlockPos(), SetCPUStatusPacket.Action.POWER))));
         this.addRenderableWidget(new SMDButton(leftPos + 16, topPos + 40, btn ->
                 PacketDistributor.sendToServer(new SetCPUStatusPacket(menu.mcuBlockEntity.getBlockPos(), SetCPUStatusPacket.Action.RESET))));
-
-
-        LED.intensity = 0.0f;
-
         CPUClientStore.subscribe(this);
     }
 

@@ -63,14 +63,13 @@ public class CartridgeItem extends Item {
     private boolean onFileOpened(Path file) {
         try {
             var size = Files.size(file) / 1024;
-            if (size > 20) { // TODO: Increase limit with packet splitting or smth
+            if (size > 32) { // TODO: Increase limit with packet splitting or smth
                 Modal.alert(Component.literal("File read error"), Component.literal("File is too large. (" + size + " KiB)"));
                 return false;
             }
 
             byte[] elf = Files.readAllBytes(file);
-            // TODO: Refactor to packet distributor?
-            Minecraft.getInstance().getConnection().send(new FirmwareUploadPacket(file.toString(), elf));
+            PacketDistributor.sendToServer(new FirmwareUploadPacket(file.toString(), elf));
             return true;
         } catch (IOException e) {
             Modal.alert(Component.literal("Upload error"), Component.literal(e.toString()));
