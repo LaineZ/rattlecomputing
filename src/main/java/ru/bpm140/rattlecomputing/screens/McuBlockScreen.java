@@ -1,16 +1,20 @@
 package ru.bpm140.rattlecomputing.screens;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.PacketDistributor;
 import ru.bpm140.rattlecomputing.DisplayTexture;
+import ru.bpm140.rattlecomputing.Rattlecomputing;
 import ru.bpm140.rattlecomputing.menus.McuBlockMenu;
 import ru.bpm140.rattlecomputing.network.CPUClientStore;
 import ru.bpm140.rattlecomputing.network.packets.SetCPUStatusPacket;
@@ -35,6 +39,10 @@ public class McuBlockScreen extends AbstractContainerScreen<McuBlockMenu> implem
     private final LEDGlow LED = LEDGlow.GREEN();
     private final LEDGlow failLED = LEDGlow.RED();
     private final LEDGlow runLED = LEDGlow.GREEN();
+
+    private static final ResourceLocation SMALL_FONT = ResourceLocation.fromNamespaceAndPath(Rattlecomputing.MODID,
+            "4x6");
+    private static final Style STYLE = Style.EMPTY.withFont(SMALL_FONT);
 
     public McuBlockScreen(McuBlockMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
@@ -67,6 +75,34 @@ public class McuBlockScreen extends AbstractContainerScreen<McuBlockMenu> implem
         runLED.render(guiGraphics, leftPos + 15, topPos + 47 + baseOffset, LED_GLOW_WIDTH, LED_GLOW_HEIGHT);
         failLED.render(guiGraphics,leftPos + 15, topPos + 47 + (baseOffset * 2), LED_GLOW_WIDTH, LED_GLOW_HEIGHT);
 
+        Component text = Component.literal("Test").withStyle(STYLE);
+        Component text2 = Component.literal("message").withStyle(STYLE);
+
+
+        this.font.drawInBatch(
+                text,
+                leftPos + 109, topPos + 13,
+                0xFFFFFF,
+                false,
+                guiGraphics.pose().last().pose(),
+                guiGraphics.bufferSource(),
+                Font.DisplayMode.NORMAL,
+                0,
+                15728880 // what the fuck
+        );
+
+        this.font.drawInBatch(
+                text2,
+                leftPos + 109, topPos + 20,
+                0xFFFFFF,
+                false,
+                guiGraphics.pose().last().pose(),
+                guiGraphics.bufferSource(),
+                Font.DisplayMode.NORMAL,
+                0,
+                15728880 // what the fuck
+        );
+
         if (snapshot.state == CPUStatus.CPUState.RUNNING) {
             runLED.intensity = 1.0f;
         } else {
@@ -95,7 +131,6 @@ public class McuBlockScreen extends AbstractContainerScreen<McuBlockMenu> implem
         var pizda = menu.mcuBlockEntity.getBlockPos();
         if (pos.equals(pizda)) {
             this.snapshot.state = state;
-            CPUClientStore.remove(pos);
         }
     }
 }

@@ -1,0 +1,24 @@
+{
+  "providers": [
+    {
+            "type": "space",
+            "advances": {
+                " ": 4
+            }
+        },
+    {
+      "type": "bitmap",
+      "file": "rattlecomputing:font/4x6.png",
+      "ascent": 4,
+      "height": 6,
+      "chars": [
+        " !\"#$%&'()*+,-./",
+        "0123456789:;<=>?",
+        "@ABCDEFGHIJKLMNO",
+        "PQRSTUVWXYZ[\\]^_",
+        "`abcdefghijklmno",
+        "pqrstuvwxyz{|}~ "
+      ]
+    }
+  ]
+}
